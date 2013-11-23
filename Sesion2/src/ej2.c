@@ -40,7 +40,11 @@ int main(int argc, char *argv[])
     /* SI hemos llegado hasta aquí, el número para los permisos es correcto */
 
     DIR *directorio = opendir(path);
+    if (directorio == NULL) 
+        fatal("Abriendo el directorio");
     struct dirent *contenido = readdir(directorio); 
+    if (contenido == NULL)
+        fatal("Leyendo el directorio");
     struct stat atributos;
 
     /* Ignoramos . y .. */
