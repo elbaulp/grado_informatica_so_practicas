@@ -1,0 +1,436 @@
+% Filename: pcmslmod.tex v.1.4
+
+% Contains modifications to pcms-l.cls (version 1.2d, 1997/01/02)
+
+% Written by David R. Morrison, 1997/04/20; revised 1997/11/23; 1998/2/9;
+% 1998/3/13; 1998/3/31; 1998/5/29
+\typeout{pcmslmod.tex v.1.4, 1998/5/29}
+
+
+% Summary of changes
+%
+% 1. A new command \lectureseries, which specifies the title of the lecture
+% series and does the page setup for the first page of the series
+% (eliminating the need for a \chapter*{} command).  An optional argument
+% allows the specification of a shortened title for running heads.
+%
+% 2. A modification of the \auth command, allowing the specification of a
+% shortened author name for running heads.
+%
+% 3. A modification of the \lecture command, giving it an argument for the
+% specification of the lecture name (rather than a separate \lecturename
+% command), and incorporating the \chapter*{} command so that the latter
+% does not need to be invoked by the user.  From the user's perspective,
+% \lecture should function in a very similar fashion to \chapter.
+%
+% 3A. In v.1.1 of this file, an alternate "starred" form \lecture* is
+% introduced, which allows for the inclusion of unnumbered lectures (such
+% as a preface, or a list of problems).  The title of this unnumbered
+% lecture is flush left if the lecture is the first one (i.e., the
+% preface or introduction), otherwise it is set flush right.
+%
+% 4. Two style corrections in running heads: the body of the running heads
+% should be set in medium weight rather than bold, and the author and title
+% should be separated by a comma rather than a period.
+%
+% 5. Modifications of bibliography and index commands, so that their
+% headings and running heads have the same style as lectures.  A new
+% user-specifiable option \ifBibliographyIsASection (with default value
+% \BibliographyIsASectionfalse) is introduced: it should be set to true if
+% a user wants separate bibliography sections at the end of each lecture
+% rather than a single bibliography at the end.
+%
+% 6. A minor style change: since the footnote giving the author address is
+% typically several lines long, with subsequent lines giving information
+% such as e-mail or current addresses which has equal logical weight to the
+% address itself, having the first line of the footnote indented presents a
+% strange appearance.  As an easy fix, indentation from footnotes was
+% removed. 
+%
+% 6A. In v.1.1 of this file, the commands \thanks, \subjclass, \keywords,
+% and \date were all implemented; as in most AMS styles, they produce 
+% additional footnotes on the first page.
+%
+% 7. The sample files have also been rewritten in a way compatible with these
+% changes. 
+%
+% 8. Changes in v 1.4: fixed font size of author, and fixed spacing after
+% lecture 
+
+\makeatletter
+
+% First, we define a new command \lectureseries, replacing the 
+% \chapter*{title} command at the head of the file.  An optional argument
+% allows a shortened form to be specified for use in running heads.  (The
+% thing used in running heads is \thelectureseries -- this is unchanged.)
+%
+% NB: \part* and \pauth commands could still be used to generate a separate
+% title page for an individual lecture series, if that is desired.
+%
+% We also introduce \iffirstlecture, which is set to true by the
+% \lectureseries command so that the top-of-page formatting is not repeated
+% by the \lecture command in this case.
+
+\newif\iffirstlecture\firstlecturefalse
+
+\newcommand{\lectureseries}{\firstlecturetrue
+              \secdef\@lectureseries\@slectureseries} 
+
+\newcommand{\@lectureseries}[2][default]{\chapter*{#2}%
+              \gdef\thelectureseries{#1}} 
+
+\newcommand{\@slectureseries}[1]{\chapter*{#1}}
+
+% Next, we redefine \auth to allow for the specification of a shortened
+% author name in running heads, as an optional argument.  (TeX-nical note:
+% it might have been better to write this command and the previous one
+% using \@dblarg rather than \secdef.)
+
+\renewcommand{\auth}{\secdef\@auth\@sauth}
+
+\newcommand{\@auth}[2][default]{\vspace{-1pc}{\raggedleft
+        \Large\bf\noindent
+        #2\endgraf
+        \vspace*{2pc}
+        }
+        \def\@author{#1}%
+}
+
+\newcommand{\@sauth}[1]{\vspace{-1pc}{\raggedleft
+        \Large\bf\noindent
+        #1\endgraf
+        \vspace*{2pc}
+        }
+        \def\@author{#1}%
+}
+
+% Next, we redefine \lecture so that \chapter*{} is not needed.  To make
+% this work, we only want to insert \chapter*{} starting with the second
+% \lecture command, which was why we introduced \iffirstlecture.
+%
+% Also, \lecture now takes an argument specifying the title, in place of
+% the old \lecturename command.
+
+\def\lecture#1{\global\Lecturetrue\global\Monographfalse
+\iffirstlecture\else\chapter*{}\fi\firstlecturefalse
+  \global\let\sectionmark\@gobble % \lecturemark will be used instead
+  \addtocounter{lecture}1\relax
+  \refstepcounter{chapter}%
+%  \addtocounter{chapter}1\relax % this is done for section numbering
+\gdef\thelecturename{#1\unskip}
+  {\Large\bfseries
+   \raggedleft
+   \@xp\uppercase\@xp{\thelecturelabel} {\LARGE\thelecturenum}\\
+   \vspace*{3pt}%
+   \thelecturename
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\lecturemark\@xp{\thelecturename}%
+  \addcontentsline{toc}{chapter}{%
+    \thelecturelabel\ \thelecturenum.\ \thelecturename}%
+  \vspace{34\p@}\noindent}
+  
+% In v.1.1, \lecture is redefined again, to implement the inclusion of a
+% "starred" form \lecture*.
+
+\def\lecture{\global\Lecturetrue\global\Monographfalse
+\iffirstlecture\else\chapter*{}\fi%
+  \global\let\sectionmark\@gobble % \lecturemark will be used instead
+\secdef\@lecture\@slecture}
+
+\def\@lecture[#1]#2{%
+  \addtocounter{lecture}1\relax
+  \refstepcounter{chapter}%
+%  \addtocounter{chapter}1\relax % this is done for section numbering
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+   \raggedleft
+   \@xp\uppercase\@xp{\thelecturelabel} {\LARGE\thelecturenum}\\
+   \vspace*{3pt}%
+%   \thelecturename
+    #2\unskip
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\lecturemark\@xp{\thelecturename}%
+  \addcontentsline{toc}{chapter}{%
+%    \thelecturelabel\ \thelecturenum.\ \thelecturename}%
+    \thelecturelabel\ \thelecturenum.\ #2}%
+  \vspace{34\p@}\noindent}
+  
+\def\slecturerunhead#1#2#3{%
+    \let\@tempa\chaptername
+    \uppercasenonmath{\@tempa}%
+    \def\@tempb{#3\unskip}%
+    \uppercasenonmath{\@tempb}%
+    {\normalfont\@tempb}
+    }
+\def\slecturemark{%\let\@secnumber\@empty
+%    \@secmark\markright\sectionrunhead\sectionname}%
+    \@secmark\markright\slecturerunhead\chaptername}%
+
+
+\def\@slecture#1{%
+\iffirstlecture
+%  \addtocounter{lecture}1\relax
+%  \refstepcounter{chapter}%
+%%  \addtocounter{chapter}1\relax % this is done for section numbering
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+%   \raggedleft
+%   \@xp\uppercase\@xp{\thelecturelabel} {\LARGE\thelecturenum}\\
+%   \vspace*{3pt}%
+%\noindent\@xp\uppercase\@xp{\thelecturename} 
+\noindent\thelecturename
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\slecturemark\@xp{\thelecturename}%
+%\markright\thelecturename
+  \addcontentsline{toc}{chapter}{%
+    \thelecturename}%
+ \vspace{-6\p@}\noindent
+%\noindent
+\else
+%  \addtocounter{lecture}1\relax
+%  \refstepcounter{chapter}%
+%%  \addtocounter{chapter}1\relax % this is done for section numbering
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+   \raggedleft
+%   \@xp\uppercase\@xp{\thelecturelabel} {\LARGE\thelecturenum}\\
+%   \vspace*{3pt}%
+   \@xp\uppercase\@xp{\thelecturename}
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\slecturemark\@xp{\thelecturename}%
+%\markright\thelecturename
+  \addcontentsline{toc}{chapter}{%
+    \thelecturename}%
+  \vspace{34\p@}\noindent
+\fi}
+
+% We make the following changes to definitions of running heads: 
+% (1) add \textmd so that the header is not boldface
+% (2) use a comma, not a period, to separate author and lectureseries
+
+\ifLecture
+  \def\chapterrunhead#1#2#3{%
+    \let\@tempa\@author
+    \uppercasenonmath{\@tempa}%
+    \uppercasenonmath{\thelectureseries}%
+    \textmd{\@tempa, \thelectureseries}
+    }
+  \def\lecturerunhead#1#2#3{%
+    \let\@tempa\chaptername
+    \uppercasenonmath{\@tempa}%
+    \def\@tempb{#3\unskip}%
+    \uppercasenonmath{\@tempb}%
+    \textmd{\@tempa\ #2. \@tempb}
+    }
+\else
+  \let\chapterrunhead\partrunhead
+\fi
+
+% For the bibliography, we do two things
+% (1) we introduce \ifBibliographyIsASection (default is false) to decide
+% if a section or a chapter.  When its a chapter, but we are in lecture
+% mode, we use the lecture style of headings.  If its a section, it should
+% NOT be in backmatter.
+% (2) we fix the running heads to be consistent with everything else.
+
+\newif\ifBibliographyIsASection\BibliographyIsASectionfalse
+
+  \def\bibliomark{%\let\@secnumber\@empty
+%    \@secmark\markright\sectionrunhead\sectionname}%
+    \@secmark\markright\bibliorunhead\chaptername}%
+
+  \def\bibliorunhead#1#2#3{%
+    \let\@tempa\chaptername
+    \uppercasenonmath{\@tempa}%
+    \def\@tempb{#3\unskip}%
+    \uppercasenonmath{\@tempb}%
+    \textmd{\@tempb}
+    }
+
+\def\thebibliography#1{%
+  \ifBibliographyIsASection
+    \section*\refname
+    \if@backmatter
+      \markboth{\refname}{\refname}%
+    \fi
+  \else
+\chapter*{}
+  {\Large\bfseries
+   \raggedleft
+   \@xp\uppercase\@xp{\bibname} \\
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\bibliomark\@xp{\bibname}%
+  \addcontentsline{toc}{chapter}{%
+    \bibname}%
+  \vspace{34\p@}\noindent
+  \fi
+  \normalsize\labelsep .5em\relax
+  \list{\@arabic\c@enumi.}{\settowidth\labelwidth{\@biblabel{#1}}%
+  \leftmargin\labelwidth
+  \advance\leftmargin\labelsep
+%	\bibsetup\relax
+	\usecounter{enumi}}\sloppy
+  \clubpenalty9999 \widowpenalty\clubpenalty  \sfcode`\.\@m}
+
+% We also want to change the headings and running heads for the index.  We
+% only do this in the case of a lecture (so the previous definition will still
+% be invoked in the case of a monograph.)
+
+  \def\indexmark{%\let\@secnumber\@empty
+%    \@secmark\markright\sectionrunhead\sectionname}%
+    \@secmark\markright\indexrunhead\chaptername}%
+
+  \def\indexrunhead#1#2#3{%
+    \let\@tempa\chaptername
+    \uppercasenonmath{\@tempa}%
+    \def\@tempb{#3\unskip}%
+    \uppercasenonmath{\@tempb}%
+    \textmd{\@tempb}
+    }
+
+\ifLecture
+\def\theindex{\cleardoublepage
+\@restonecoltrue\if@twocolumn\@restonecolfalse\fi
+\columnseprule \z@ \columnsep 35pt
+\def\indexchap{\@startsection
+		{chapter}{1}{\z@}{8pc}{34pt}%
+		{\raggedleft
+		\Large\bfseries}}%
+ \twocolumn[\indexchap[{\indexname}]{\@xp\uppercase\@xp{\indexname}}]
+%		\Large\bfseries}}%
+% \twocolumn[\indexchap*{\@xp\uppercase\@xp{\indexname}}]
+% \@mkboth{{\indexname}}{{\indexname}}%
+  \@xp\indexmark\@xp{\indexname}%
+	\thispagestyle{plain}\let\item\@idxitem\parindent\z@
+	 \footnotesize\parskip\z@ plus .3pt\relax\let\item\@idxitem}
+\fi
+
+% Finally, a small stylistic change: for the footnote giving the author
+% address, indenting the footnote doesn't look good (in my opinion) due to
+% the email line NOT being indented. So we change:
+%
+% \def\@makefntext{\indent\@makefnmark}
+%
+% to
+
+\def\@makefntext{\noindent\@makefnmark}
+
+% In v.1.1, we also implement \thanks and other commands which make
+% first-page footnotes:
+
+\def\setaddress{%
+  {\let\@makefnmark\relax  \let\@thefnmark\relax
+        \nobreak
+        \addressnum@=\z@
+        \loop\ifnum\addressnum@<\addresscount@\advance\addressnum@\@ne
+           \footnote{$^{\hbox{\tiny\number\addressnum@}}$%
+           \csname @address\number\addressnum@\endcsname
+           \csname @curraddr\number\addressnum@\endcsname
+           \csname @email\number\addressnum@\endcsname}\repeat
+  \ifx\@empty\@date\else \@footnotetext{\@setdate}\fi
+  \ifx\@empty\@subjclass\else \@footnotetext{\@setsubjclass}\fi
+  \ifx\@empty\@keywords\else \@footnotetext{\@setkeywords}\fi
+  \ifx\@empty\thankses\else \@footnotetext{%
+    \def\par{\let\par\@par}\@setthanks}\fi
+    }%
+  \@setcopyright
+}
+
+% fix blank pages (Dan Freed -- November 25, 1997)
+
+\def\@tmpevenhead{\relax}
+
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+    \let\@tmpevenhead\@evenhead \let\@evenhead\relax\hbox{}\eject 
+    \let\@evenhead\@tmpevenhead\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+
+% define \copyrightyear to be \currentyear (Dan Freed -- March 13, 1998)
+
+\def\@setcopyright{%
+  \let\copyrightyear\currentyear             % DF
+  \insert\copyins{\hsize\textwidth
+    \parfillskip\z@ \leftskip\z@\@plus.9\textwidth
+    \fontsize{6}{7\p@}\normalfont\upshape
+    \everypar{}%
+    \vskip-\skip\copyins \nointerlineskip
+    \noindent\vrule\@width\z@\@height\skip\copyins
+    \copyright\copyrightyear\ elbauldelprogramador.com\par
+    \kern\z@}%
+}
+
+% macro to put in blank page at beginning for 2-up viewing
+
+\def\BlankPage{\pagestyle{empty}\thispagestyle{empty}\null\vfil\eject} 
+
+%fix font size of author:
+
+\renewcommand{\@auth}[2][default]{{\raggedleft
+        \begingroup
+  \fontsize{\@xivpt}{18}\bfseries%\centering
+  #2\par \endgroup
+        \vspace*{2pc}
+        }
+        \def\@author{#1}%
+}
+
+\renewcommand{\@sauth}[1]{{\raggedleft
+        \begingroup
+  \fontsize{\@xivpt}{18}\bfseries%\centering
+  #1\par \endgroup
+        \vspace*{2pc}
+        }
+        \def\@author{#1}%
+}
+
+%fix spacing after lecture
+
+\def\@lecture[#1]#2{%
+  \addtocounter{lecture}1\relax
+  \refstepcounter{chapter}%
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+   \raggedleft
+   \@xp\uppercase\@xp{\thelecturelabel} {\LARGE\thelecturenum}\\
+   \vspace*{3pt}%
+    #2\unskip
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\lecturemark\@xp{\thelecturename}%
+  \addcontentsline{toc}{chapter}{%
+    \thelecturelabel\ \thelecturenum.\ #2}%
+  \vspace{10\p@}\noindent}
+  
+\def\@slecture#1{%
+\iffirstlecture
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+\noindent\thelecturename
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\slecturemark\@xp{\thelecturename}%
+  \addcontentsline{toc}{chapter}{%
+    \thelecturename}%
+ \vspace{-6\p@}\noindent
+\else
+\gdef\thelecturename{#1\unskip}\firstlecturefalse
+  {\Large\bfseries
+   \raggedleft
+   \@xp\uppercase\@xp{\thelecturename}
+   \endgraf}%
+  \let\@secnumber=\thelecturenum
+  \@xp\slecturemark\@xp{\thelecturename}%
+  \addcontentsline{toc}{chapter}{%
+    \thelecturename}%
+  \vspace{10\p@}\noindent
+\fi}
+
+
+
+% End of modifications to pcms-l.cls.
+
+\makeatother

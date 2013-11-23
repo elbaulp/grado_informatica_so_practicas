@@ -1,0 +1,113 @@
+\chapter{Sesión 2}
+
+\begin{exercise}
+?`Qué hace el siguiente programa?
+
+\end{exercise}
+\begin{cppcode}
+/*
+tarea3.c
+Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
+Este programa fuente está pensado para que se cree primero un programa con la parte
+ de CREACION DE ARCHIVOS y se haga un ls -l para fijarnos en los permisos y entender
+ la llamada umask.
+En segundo lugar (una vez creados los archivos) hay que crear un segundo programa
+ con la parte de CAMBIO DE PERMISOS para comprender el cambio de permisos relativo
+ a los permisos que actualmente tiene un archivo frente a un establecimiento de permisos
+ absoluto.
+*/
+
+#include<sys/types.h>   //Primitive system data types for abstraction of implementation-dependent data types.
+                        //POSIX Standard: 2.6 Primitive System Data Types <sys/types.h>
+#include<unistd.h>      //POSIX Standard: 2.10 Symbolic Constants         <unistd.h>
+#include<sys/stat.h>
+#include<fcntl.h>       //Needed for open
+#include<stdio.h>
+#include<errno.h>
+
+
+int main(int argc, char *argv[])
+{
+int fd1,fd2;
+struct stat atributos;
+
+//CREACION DE ARCHIVOS
+if( (fd1=open("archivo1",O_CREAT|O_TRUNC|O_WRONLY,S_IRGRP|S_IWGRP|S_IXGRP))<0) {
+    printf("\nError %d en open(archivo1,...)",errno);
+    perror("\nError en open");
+    exit(-1);
+}
+
+umask(0);
+if( (fd2=open("archivo2",O_CREAT|O_TRUNC|O_WRONLY,S_IRGRP|S_IWGRP|S_IXGRP))<0) {
+    printf("\nError %d en open(archivo2,...)",errno);
+    perror("\nError en open");
+    exit(-1);
+}
+
+//CAMBIO DE PERMISOS
+if(stat("archivo1",&atributos) < 0) {
+    printf("\nError al intentar acceder a los atributos de archivo1");
+    perror("\nError en lstat");
+    exit(-1);
+}
+if(chmod("archivo1", (atributos.st_mode & ~S_IXGRP) | S_ISGID) < 0) {
+    perror("\nError en chmod para archivo1");
+    exit(-1);
+}
+if(chmod("archivo2",S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH) < 0) {
+    perror("\nError en chmod para archivo2");
+    exit(-1);
+}
+
+return 0;
+}
+\end{cppcode}
+
+{\color{blue} Crea dos archivos, \verb!archivo1! con permisos \verb!O_WRONLY,S_IRGRP|S_IWGRP|S_IXGRP!, es decir, \verb!---rwx---!, Este valor se logra con la siguiente operación sobre el \verb!umask!, que en mi máquina por defecto vale \verb!0002!:
+\begin{cppcode}
+(000000000100000 | 000000000010000 | 000000000001000) 
+&           ~000000000000010 
+= (000000000111000) & 111111111111101 
+= 000000000111000
+\end{cppcode}
+ y luego se cambia el \verb!umask! a \verb!0! y se crea \verb!archivo2! con permisos \verb!S_IRGRP|S_IWGRP|S_IXGRP!, aplicando la máscara 0 se obtiene 
+\begin{cppcode}
+(000000000100000 | 000000000010000 | 000000000001000) 
+&           ~000000000000000  
+= 000000000111000 & 111111111111111 
+= 000000000111000
+\end{cppcode}
+que es \verb!---rwx---!.
+
+La segunda parte del programa, obtiene los atributos de \verb!archivo1!, y luego le cambia los permisos con \verb!(atributos.st_mode & ~S_IXGRP)!, que quiere decir: Si ya tiene permisos de ejecución para el grupo, se desactivan, en caso de no tenerlo, lo activa. Y \verb!| S_ISGID! activa el grupo efectivo.
+}
+
+
+\begin{exercise}
+Realiza un programa en C utilizando las llamadas al sistema necesarias que
+acepte como entrada:
+\begin{itemize}
+	\item Un argumento que representa el \emph{\textbf{'pathname'}} de un directorio.
+    \item Otro argumento que es u\emph{n \textbf{número octal de 4 dígitos}} (similar al que se puede utilizar
+para cambiar los permisos en la llamada al sistema chmod). Para convertir este
+argumento tipo cadena a un tipo numérico puedes utilizar la función strtol. Consulta
+el manual en línea para conocer sus argumentos.
+\end{itemize}
+El programa tiene que usar el número octal indicado en el segundo argumento para cambiar
+los permisos de todos los archivos que se encuentren en el directorio indicado en el primer
+argumento.
+El programa debe proporcionar en la salida estándar una línea para cada archivo del
+directorio que esté formada por:
+\begin{bashcode}
+<nombre_de_archivo> : <permisos_antiguos> <permisos_nuevos>
+\end{bashcode}
+Si no se pueden cambiar los permisos de un determinado archivo se debe especificar la
+siguiente información en la línea de salida:
+\begin{bashcode}
+<nombre_de_archivo> : <errno> <permisos_antiguos>
+\end{bashcode}
+
+\cppscript{../Sesion2/src/ej2}{Ejercicio2}
+
+\end{exercise}
