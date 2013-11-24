@@ -38,11 +38,12 @@ void explorar_directorio(char *path, char *path_relativo, size_t *suma_total, in
             *suma_total += atributos.st_size;
         } else if (S_ISDIR(atributos.st_mode)){
             strcat(path_relativo, "/");
-            char aux[strlen(path)];
+            char *aux = (char*) ec_malloc(strlen(path));
             /* Para guardar el valor anterior del path al volver de la llamada recursiva */
             strcpy(aux, path);
             explorar_directorio(path_relativo, path, suma_total, contador_archivos);
             strcpy(path, aux);
+            free(aux);
         }
         contenido = readdir(directorio);
     }
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
         strcpy(path, ".");
     }
     else{ 
-        path = (char*) ec_malloc(strlen(argv[1]));
+        path = (char*) ec_malloc(strlen(argv[1]) + 256);
         strcpy(path, argv[1]);
     }
     
