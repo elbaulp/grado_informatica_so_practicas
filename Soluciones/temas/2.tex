@@ -119,4 +119,33 @@ archivos regulares que tengan permiso de ejecución para el grupo y para otros. 
 nombre de los archivos encontrados, deberá devolver sus números de inodo y la suma total de
 espacio ocupado por dichos archivos.
 
+\cppscript{../Sesion2/src/buscar}{Buscar}
+
 \end{exercise}
+
+La cabecera \emph{utils.h} tiene el siguiente contenido:
+
+\begin{cppcode}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Muestra el error y sale
+void fatal(char *message) {
+   char error_message[100];
+
+   strcpy(error_message, "[!!] Fatal Error ");
+   strncat(error_message, message, 83);
+   perror(error_message);
+   exit(-1);
+}
+
+// malloc() wrapper
+void *ec_malloc(unsigned int size) {
+   void *ptr;
+   ptr = malloc(size);
+   if(ptr == NULL)
+      fatal("in ec_malloc() on memory allocation");
+   return ptr;
+}
+\end{cppcode}

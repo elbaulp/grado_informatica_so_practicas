@@ -55,18 +55,26 @@
 
 \newif\ifEdicionPC % Por defecto vale false
 
+% AUTHOR-DEFINED MACROS:
+\newif\ifEdicionPC % Por defecto vale false
+
 %Descomentar para hacer valor veradero
 \EdicionPCtrue
 
 \ifEdicionPC
     %Fuente Sans-serif para leer en pc
-    \usepackage[light,math]{kurier}
-    \usepackage[T1]{fontenc}
+    \usepackage{fontspec} % Allows font customization
+    \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+    \setmainfont{Ubuntu Light} % Main document font
+    \setmonofont{Ubuntu Mono}
+
 \else
     %Fuente para Imprimir en papel, serif
     %\usepackage{txfonts}
-    \usepackage{gfsartemisia} 
-    \usepackage[T1]{fontenc}
+    \usepackage{fontspec} % Allows font customization
+    \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+    \setmainfont{Lucida} % Main document font
+    \setmonofont{Ubuntu Mono}
 \fi
 \input{titlePage}
 \usepackage{minted}
@@ -77,8 +85,6 @@
     gobble=0,
     frame=lines,
     framesep=2mm,
-    fontsize=\footnotesize,
-    fontfamily=courier,
 }
 
 \newcommand{\bashscript}[2]{
@@ -91,8 +97,6 @@
     gobble=0,
     frame=lines,
     framesep=2mm,
-    fontsize=\footnotesize,
-    fontfamily=courier,
 }
 
 \newcommand{\cppscript}[2]{
@@ -101,8 +105,6 @@
 
 \newminted{bash}{
    gobble=0,
-   fontsize=\footnotesize,
-   fontfamily=courier,
    frame=lines,
    framesep=2mm,
    mathescape=true,
@@ -110,8 +112,6 @@
 
 \newminted{cpp}{
    gobble=0,
-   fontsize=\footnotesize,
-   fontfamily=courier,
    frame=lines,
    framesep=2mm,
    mathescape=true,
@@ -143,9 +143,12 @@
 %%%%%%%%%%%%%%%%% REpaso T1 T2 FS %%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{temas/1}
-\input{temas/2}
-
+%\input{temas/1}
+%\input{temas/2}
+%\input{temas/3}
+%\input{temas/4}
+%\input{temas/5}
+\input{temas/6}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%% T1 Estructuras SO %%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
