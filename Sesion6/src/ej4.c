@@ -25,18 +25,6 @@ int main(int argc, char *argv[])
        perror("Creando el fichero");
        exit(EXIT_FAILURE);
     }
-
-    /* Comprobamos si existe el fichero */
-    if (stat(LOCK_FILE, &sf) == -1 ){
-        perror("stat");
-        exit(EXIT_FAILURE);
-    }
-
-    if (sf.st_size != 0){
-        printf("Error: otro proceso no ha finalizado correctamente el fichero, borralo\n");
-        //exit(EXIT_FAILURE);
-    }
-
     
     cerrojo.l_type = F_WRLCK;
     cerrojo.l_whence = SEEK_SET;
@@ -50,6 +38,17 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
+    /* Comprobamos si existe el fichero */
+    if (stat(LOCK_FILE, &sf) == -1 ){
+        perror("stat");
+        exit(EXIT_FAILURE);
+    }
+
+    if (sf.st_size != 0){
+        printf("Error: otro proceso no ha finalizado correctamente el fichero, borralo\n");
+        exit(EXIT_FAILURE);
+    }
+
     char *pid;
     sprintf(pid, "%d", getpid());
 

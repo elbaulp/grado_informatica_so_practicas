@@ -20,3 +20,19 @@ ahora hacer la redirección de la salida de la orden indicada por el primer argu
 cauce, y redireccionar la entrada estándar de la segunda orden desde el cauce.
 \cppscript{../Sesion6/src/ej2}{Ejercicio 2}
 \end{exercise}
+
+\begin{exercise}
+Construir un programa que verifique que, efectivamente, el kernel comprueba
+que puede darse una situación de interbloqueo en el bloqueo de archivos.
+\cppscript{../Sesion6/src/ej3}{Ejercicio 3}
+\end{exercise}
+
+\begin{exercise}
+Construir un programa que se asegure que solo hay una instancia de él en
+ejecución en un momento dado. El programa, una vez que ha establecido el mecanismo para
+asegurar que solo una instancia se ejecuta, entrará en un bucle infinito que nos permitirá
+comprobar que no podemos lanzar más ejecuciones del mismo. En la construcción del mismo,
+deberemos asegurarnos de que el archivo a bloquear no contiene inicialmente nada escrito en
+una ejecución anterior que pudo quedar por una caída del sistema.
+\cppscript{../Sesion6/src/ej4}{Ejercicio 4}
+\end{exercise}
