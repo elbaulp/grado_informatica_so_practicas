@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     cerrojo.l_len = 0;      /* hasta el final de la segunda linea */
     cerrojo.l_pid = getpid();
     
-    if ( fcntl(fd, F_SETLK, &cerrojo) == -1) {
+    if ( fcntl(fd, F_SETLKW, &cerrojo) == -1) {
         perror("Adquiriendo bloqueo");
         exit(EXIT_FAILURE);
     }
