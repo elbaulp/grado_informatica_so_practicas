@@ -1,0 +1,164 @@
+\chapter{Sesión 1}
+
+\begin{exercise}
+?`Qué hace el siguiente programa? Probad tras la ejecución del programa las
+siguientes órdenes del shell: \verb!$>cat archivo y $> od -c archivo!
+\begin{cppcode}
+/*
+tarea1.c
+Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
+Probar tras la ejecución del programa: >cat archivo y > od -c archivo
+*/
+
+#include<sys/types.h>   //Primitive system data types for abstraction of implementation-dependent data types.
+                        //POSIX Standard: 2.6 Primitive System Data Types <sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<errno.h>
+
+char buf1[]="abcdefghij";
+char buf2[]="ABCDEFGHIJ";
+
+int main(int argc, char *argv[])
+{
+int fd;
+
+if( (fd=open("archivo",O_CREAT|O_TRUNC|O_WRONLY,S_IRUSR|S_IWUSR))<0) {
+    printf("\nError %d en open",errno);
+    perror("\nError en open");
+    exit(-1);
+}
+if(write(fd,buf1,10) != 10) {
+    perror("\nError en primer write");
+    exit(-1);
+}
+
+if(lseek(fd,40,SEEK_SET) < 0) {
+    perror("\nError en lseek");
+    exit(-1);
+}
+
+if(write(fd,buf2,10) != 10) {
+    perror("\nError en segundo write");
+    exit(-1);
+}
+
+return 0;
+}
+\end{cppcode}
+
+{\color{blue} El programa crea un archivo llamado \verb!archivo!, escribe el primer buffer, que contiene \verb!abcdefghij!, éstos caracteres se escriben desde la primera posición del archivo, luego, mueve el puntero a la posición 40 y escribe el segundo buffer, que contiene \verb!ABCDEFGHIJ!, por tanto, el fichero va a tener contenido nulo en las posiciones 11-39. Con el comando \verb!cat! no se aprecia el contenido nulo porque es ignodaro, sin embargo con od sí se muestran:}
+
+\begin{bashcode}
+ od -c archivo 
+0000000   a   b   c   d   e   f   g   h   i   j  \0  \0  \0  \0  \0  \0
+0000020  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0  \0
+0000040  \0  \0  \0  \0  \0  \0  \0  \0   A   B   C   D   E   F   G   H
+0000060   I   J
+0000062
+\end{bashcode}
+
+\end{exercise}
+
+\begin{exercise}
+Implementa un programa que acepte como argumento un ''pathname'', abra el
+archivo correspondiente y utilizando un tamaño de lectura en bloques de 80 Bytes cree un
+archivo de salida en el que debe aparecer lo siguiente:
+\begin{bashcode}
+Bloque 1
+//los primeros 80 Bytes
+Bloque 2
+//los siguientes 80 Bytes
+...
+Bloque n
+//los siguientes 80 Bytes
+\end{bashcode}
+\cppscript{../Sesion1/src/ej2}{Ejercicio 2}
+
+?`Cómo tendrías que modificar el programa para que una vez
+finalizada la escritura en el archivo de salida y antes de cerrarlo, pudiésemos indicar en su
+primera línea el número de etiquetas ''Bloque i'' escritas de forma que tuviese la siguiente
+apariencia?:
+
+{\color{blue} Implementado en la versión de arriba}
+\end{exercise}
+
+\begin{exercise}
+?`Qué hace el siguiente programa?
+
+\begin{cppcode}
+/*
+tarea2.c
+Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
+*/
+
+#include<sys/types.h>    //Primitive system data types for abstraction of implementation-dependent data types.
+                        //POSIX Standard: 2.6 Primitive System Data Types <sys/types.h>
+#include<unistd.h>        //POSIX Standard: 2.10 Symbolic Constants         <unistd.h>
+#include<sys/stat.h>
+#include<stdio.h>
+#include<errno.h>
+#include<string.h>
+
+int main(int argc, char *argv[])
+{
+int i;
+struct stat atributos;
+char tipoArchivo[30];
+
+if(argc<2) {
+    printf("\nSintaxis de ejecucion: tarea2 [<nombre_archivo>]+\n\n");
+    exit(-1);
+}
+for(i=1;i<argc;i++) {
+    printf("%s: ", argv[i]);
+    if(lstat(argv[i],&atributos) < 0) {
+        printf("\nError al intentar acceder a los atributos de %s",argv[i]);
+        perror("\nError en lstat");
+    }
+    else {
+        if(S_ISREG(atributos.st_mode)) strcpy(tipoArchivo,"Regular");
+        else if(S_ISDIR(atributos.st_mode)) strcpy(tipoArchivo,"Directorio");
+        else if(S_ISCHR(atributos.st_mode)) strcpy(tipoArchivo,"Especial de caracteres");
+        else if(S_ISBLK(atributos.st_mode)) strcpy(tipoArchivo,"Especial de bloques");
+        else if(S_ISFIFO(atributos.st_mode)) strcpy(tipoArchivo,"Tuber�a con nombre (FIFO)");
+        else if(S_ISLNK(atributos.st_mode)) strcpy(tipoArchivo,"Enlace relativo (soft)");
+        else if(S_ISSOCK(atributos.st_mode)) strcpy(tipoArchivo,"Socket");
+        else strcpy(tipoArchivo,"Tipo de archivo desconocido");
+        printf("%s\n",tipoArchivo);
+    }
+}
+
+return 0;
+}
+\end{cppcode}
+
+{\color{blue} 
+Para cada archivo que se le pase como parámetro, muestra qué tipo de ficheros son, en este caso usando la llamada \verb/lstat/, que se diferencia de \verb/stat/ en que si el archivo es un enlace simbólico, \verb/lstat/ proporciona los atributos del enlace en sí, no del archivo al que referencia, ejemplo de ejecución:
+
+\begin{bashcode}
+./tarea2 *
+dump: Regular
+ej2: Regular
+ej2.c: Regular
+ej2.c~: Regular
+fichero: Regular
+fichero~: Regular
+tarea1.c: Regular
+tarea2: Regular
+tarea2.c: Regular
+tarea3.c: Regular
+\end{bashcode}
+}
+\end{exercise}
+
+\begin{exercise}
+Define una macro en lenguaje C que tenga la misma funcionalidad que la macro
+S_ISREG(mode) usando para ello los flags definidos en <sys/stat.h> para el campo st_mode
+de la struct stat, y comprueba que funciona en un programa simple. Consulta en un libro
+de C o en internet cómo se especifica una macro con argumento en C.
+
+\cppscript{../Sesion1/src/ej4}{Ejercicio 4}
+\end{exercise}

@@ -1,0 +1,126 @@
+\chapter{Sesión 4}
+
+\begin{exercise}
+Consulte en el manual las llamadas al sistema para la creación de archivos
+especiales en general (mknod) y la específica para archivos FIFO (mkfifo). Pruebe a ejecutar
+el siguiente código correspondiente a dos programas que modelan el problema del
+productor/consumidor, los cuales utilizan como mecanismo de comunicación un cauce FIFO.
+Determine en qué orden y manera se han de ejecutar los dos programas para su correcto
+funcionamiento y cómo queda reflejado en el sistema que estamos utilizando un cauce FIFO.
+Justifique la respuesta.
+\cppscript{../Sesion4/consumidorFIFO}{consumidorFIFO}
+\cppscript{../Sesion4/productorFIFO}{productorFIFO}
+
+\emph{El orden da igual, es posible ejecutar primero el productor, quedando así éste
+a la espera de que se ejecute el consumidor y realice una lectura sobre el pipe. O puede
+ejecutarse primero en consumidor, quedando así a la espera de que se produzcan datos que
+consumir.}
+
+\emph{En el sistema queda reflejado el uso del cauce con la existencia del archivo}
+\begin{bashcode}
+prw-rw-rw-  1 hkr hkr      0 Dec 16 14:04 ComunicacionFIFO|
+\end{bashcode}
+\end{exercise}
+
+\begin{exercise}
+Consulte en el manual en línea la llamada al sistema pipe para la creación de
+cauces sin nombre. Pruebe a ejecutar el siguiente programa que utiliza un cauce sin nombre y
+describa la función que realiza. Justifique la respuesta.
+\begin{cppcode}
+/*
+tarea6.c
+Trabajo con llamadas al sistema del Subsistema de Procesos y Cauces conforme a
+POSIX 2.10
+*/
+#include<sys/types.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<errno.h>
+int main(int argc, char *argv[])
+{
+int fd[2], numBytes;
+pid_t PID;
+char mensaje[]= "\nEl primer mensaje transmitido por un cauce!!\n";
+char buffer[80];
+pipe(fd); // Llamada al sistema para crear un cauce sin nombre
+if ( (PID= fork())<0) {
+perror("fork");
+exit(1);
+}
+if (PID == 0) {
+//Cierre del descriptor de lectura en el proceso hijo
+close(fd[0]);
+// Enviar el mensaje a través del cauce usando el descriptor de escritura
+write(fd[1],mensaje,strlen(mensaje)+1);
+exit(0);
+}
+else { // Estoy en el proceso padre porque PID != 0
+//Cerrar el descriptor de escritura en el proceso padre
+close(fd[1]);
+//Leer datos desde el cauce.
+numBytes= read(fd[0],buffer,sizeof(buffer));
+printf("\nEl número de bytes recibidos es: %d",numBytes);
+printf("\nLa cadena enviada a través del cauce es: %s", buffer);
+}
+return(0);
+}
+\end{cppcode}
+\emph{Se crea un cauce sin nombre y seguidamente un proceso hijo. En el proceso hijo se cierra el descriptor de lectura almacenado en \textbf{fd[0]}, ya que 
+es el hijo que el que va a escribir en el cauce y por tanto debe de cerrar ese lado del cauce. En el proceso padre se realiza lo contrario, se cierra el descriptor de escritura del cauce, ya que éste sólo va a encargarse de leer lo que escriba el hijo.}
+\cppscript{../Sesion4/tarea6}{Tarea6}
+\end{exercise}
+
+\begin{exercise}
+Redirigiendo las entradas y salidas estándares de los procesos a los cauces
+podemos escribir un programa en lenguaje C que permita comunicar órdenes existentes sin
+necesidad de reprogramarlas, tal como hace el shell (por ejemplo ls | sort). En particular,
+ejecute el siguiente programa que ilustra la comunicación entre proceso padre e hijo a través
+de un cauce sin nombre redirigiendo la entrada estándar y la salida estándar del padre y el
+hijo respectivamente.
+\cppscript{../Sesion4/tarea7}{Tarea7}
+\end{exercise}
+
+\begin{exercise}
+Compare el siguiente programa con el anterior y ejecútelo. Describa la
+principal diferencia, si existe, tanto en su código como en el resultado de la ejecución.
+\cppscript{../Sesion4/tarea8}{Tarea8}
+\emph{La única diferencia es que se usa la llamada al sistema \textbf{dup2}, que realiza simultáneamente las llamadas a \textbf{close} y \textbf{dup}.}
+\end{exercise}
+
+\begin{exercise}
+Este ejercicio se basa en la idea de utilizar varios procesos para realizar partes de una
+computación en paralelo. Para ello, deberá construir un programa que siga el esquema de
+computación maestro-esclavo, en el cual existen varios procesos trabajadores (esclavos)
+idénticos y un único proceso que reparte trabajo y reúne resultados (maestro). Cada esclavo
+es capaz de realizar una computación que le asigne el maestro y enviar a este último los
+resultados para que sean mostrados en pantalla por el maestro.
+
+El ejercicio concreto a programar consistirá en el cálculo de los números primos que hay en
+un intervalo. Será necesario construir dos programas, maestro y esclavo, que darán lugar a
+tres procesos, 1 maestro y 2 esclavos. Además se tendrá que tener en cuenta la siguiente
+especificación:
+
+\begin{itemize}
+    \item El intervalo de números naturales donde calcular los número primos se pasará como
+argumento al programa maestro. El maestro creará dos procesos esclavos y dividirá
+el intervalo en dos subintervalos de igual tamaño pasando cada subintervalo como
+argumento a cada programa esclavo. Por ejemplo, si al maestro le proporcionamos el
+intervalo entre 1000 y 2000, entonces un esclavo debe calcular y devolver los
+números primos comprendidos en el subintervalo entre 1000 y 1500, y el otro esclavo
+entre 1501 y 2000. El maestro irá recibiendo y mostrando en pantalla (también uno a
+uno) los números primos calculados por los esclavos en orden creciente.
+    \item El programa esclavo tiene como argumentos el extremo inferior y superior del
+intervalo sobre el que buscará números primos. Para identificar un número primo
+utiliza el siguiente método concreto: un número n es primo si no es divisible por
+ningún k tal que 2 < k < sqrt(n), donde sqrt corresponde a la función de cálculo de la
+raíz cuadrada (consulte dicha función en el manual). El esclavo envía al maestro cada
+primo encontrado como un dato entero (4 bytes) que escribe en la salida estándar, la
+cuál se tiene que encontrar redireccionada a un cauce sin nombre. Los dos cauces sin
+nombre necesarios, cada uno para comunicar cada esclavo con el maestro, los creará
+el maestro inicialmente. Una vez que un esclavo haya calculado y enviado (uno a uno)
+al maestro todos los primos en su correspondiente intervalo terminará.
+\end{itemize}
+\cppscript{../Sesion4/definitivo}{Ejercicio5}
+\end{exercise}

@@ -1,0 +1,157 @@
+% This is a sample file for the Undergraduate Faculty Program at
+% PCMI, containing one lecture
+%
+%   What is a Partial Differential Equation?
+%
+%  from the Park City Lectures of Andrew J. Bernoff.
+%
+% The sample file illustrates the use of epsf.tex to include postscript
+% graphics, as well as various "AmS-LaTeX" constructions from the amsmath
+% package (which is automatically loaded by the pcms-l document class).
+% To run this file you need the files
+%
+%        pcms-l.cls and pcmslmod.tex
+%
+
+
+\documentclass[lecture,10pt,]{pcms-l}
+\input{pcmslmod.tex}  % v.1.2
+%\input epsf.tex
+\usepackage[margin=3cm]{geometry}
+%\usepackage{amssymb} % this command would have loaded all the extra symbols,
+
+
+
+% authors should not define these, they will be defined by the volume editors
+%\def\currentvolume{3}
+%\def\currentyear{1993}
+
+\usepackage{amsmath}
+\usepackage{breqn}  %Para separar las ecuaciones largas
+\usepackage{enumerate} %Enumerar con numeros romanos
+% EQUATION NUMBERING AND THEOREM SETUP
+
+\numberwithin{section}{chapter}
+\numberwithin{equation}{chapter}
+
+\theoremstyle{plain}
+\newtheorem{theorem}[equation]{Theorem}
+\newtheorem{lemma}[equation]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{definition}[equation]{Definition}
+
+\newtheorem{exercise}{Exercise}
+\newtheorem{example}{Ejemplo}
+\newtheorem{problem}{Problem}
+\newtheorem*{remark}{Remark}
+
+% Set enumerate to use letters, not numbers for problem parts.
+
+\renewcommand{\theenumi}{\alph{enumi}}
+\renewcommand{\labelenumi}{(\theenumi)}
+
+% AUTHOR-DEFINED MACROS:
+
+\newif\ifEdicionPC % Por defecto vale false
+
+% AUTHOR-DEFINED MACROS:
+\newif\ifEdicionPC % Por defecto vale false
+
+%Descomentar para hacer valor veradero
+\EdicionPCtrue
+
+\ifEdicionPC
+    %Fuente Sans-serif para leer en pc
+    \usepackage{fontspec} % Allows font customization
+    \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+    \setmainfont{Ubuntu Light} % Main document font
+    \setmonofont{Ubuntu Mono}
+
+\else
+    %Fuente para Imprimir en papel, serif
+    %\usepackage{txfonts}
+    \usepackage{fontspec} % Allows font customization
+    \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+    \setmainfont{Lucida} % Main document font
+    \setmonofont{Ubuntu Mono}
+\fi
+\input{titlePage}
+\usepackage{minted}
+
+\newmintedfile[myBash]{bash}{
+    linenos,
+    numbersep=5pt,
+    gobble=0,
+    frame=lines,
+    framesep=2mm,
+}
+
+\newcommand{\bashscript}[2]{
+    \myBash[label=#2.sh]{#1.sh}
+}
+
+\newmintedfile[myC]{cpp}{
+    linenos,
+    numbersep=5pt,
+    gobble=0,
+    frame=lines,
+    framesep=2mm,
+}
+
+\newcommand{\cppscript}[2]{
+    \myC[label=#2.c]{#1.c}
+}
+
+\newminted{bash}{
+   gobble=0,
+   frame=lines,
+   framesep=2mm,
+   mathescape=true,
+}
+
+\newminted{cpp}{
+   gobble=0,
+   frame=lines,
+   framesep=2mm,
+   mathescape=true,
+}
+
+\begin{document}
+
+\mainmatter
+\setcounter{page}{1}
+
+%\LogoOn
+\thispagestyle{empty}
+\titleBC
+
+\lectureseries[Ejercicios sesiones Prácticas]{Ejercicios sesiones Prácticas}
+\auth{\href{http://elbauldelprogramador.com}{Alejandro Alcalde}}
+\address{ETSIIT, Granada}
+\email{algui91@gmail.com}
+
+%The following items will become first page footnotes; they are optional.
+\date{\today}
+\setaddress
+
+% the following hack starts the lecture numbering at 1
+\setcounter{lecture}{1}
+\setcounter{chapter}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% REpaso T1 T2 FS %%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\input{temas/1}/
+%\input{temas/2}
+%\input{temas/3}
+%\input{temas/4}
+%\input{temas/5}
+\input{temas/6}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% T1 Estructuras SO %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
