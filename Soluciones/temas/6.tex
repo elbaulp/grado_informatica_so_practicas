@@ -1,0 +1,46 @@
+\section{Sesión 6}
+
+\begin{exercise}
+Implementa un programa que admita tres argumentos. El primer argumento será
+una orden de Linux; el segundo, uno de los siguientes caracteres “<” o “>”, y el tercero el
+nombre de un archivo (que puede existir o no). El programa ejecutará la orden que se
+especifica como argumento primero e implementará la redirección especificada por el
+segundo argumento hacia el archivo indicado en el tercer argumento. Por ejemplo, si
+deseamos redireccionar la salida estándar de sort a un archivo temporal, ejecutaríamos (el
+carácter de redirección > lo ponemos entrecomillado para que no lo interprete el shell y se
+coja como argumento del programa):
+\cppscript{../Sesion6/src/ej1}{Ejercicio 1}
+\end{exercise}
+
+\begin{exercise}
+Reescribir el programa que implemente un encauzamiento de dos órdenes pero
+utilizando fcntl. Este programa admitirá tres argumentos. El primer argumento y el tercero
+serán dos órdenes de Linux. El segundo argumento será el carácter “|”. El programa deberá
+ahora hacer la redirección de la salida de la orden indicada por el primer argumento hacia el
+cauce, y redireccionar la entrada estándar de la segunda orden desde el cauce.
+\cppscript{../Sesion6/src/ej2}{Ejercicio 2}
+\end{exercise}
+
+\begin{exercise}
+Construir un programa que verifique que, efectivamente, el kernel comprueba
+que puede darse una situación de interbloqueo en el bloqueo de archivos.
+\cppscript{../Sesion6/src/ej3}{Ejercicio 3}
+\end{exercise}
+
+\begin{exercise}
+Construir un programa que se asegure que solo hay una instancia de él en
+ejecución en un momento dado. El programa, una vez que ha establecido el mecanismo para
+asegurar que solo una instancia se ejecuta, entrará en un bucle infinito que nos permitirá
+comprobar que no podemos lanzar más ejecuciones del mismo. En la construcción del mismo,
+deberemos asegurarnos de que el archivo a bloquear no contiene inicialmente nada escrito en
+una ejecución anterior que pudo quedar por una caída del sistema.
+\cppscript{../Sesion6/src/ej4}{Ejercicio 4}
+\end{exercise}
+
+\begin{exercise}
+Escribir un programa, similar a la orden cp, que utilice para su implementación
+la llamada al sistema mmap() y una función de C que nos permite copiar memoria, como por
+ejemplo memcpy(). Para conocer el tamaño del archivo origen podemos utilizar stat() y para
+establecer el tamaño del archivo destino se puede usar ftruncate().
+\cppscript{../Sesion6/src/ej5}{Ejercicio 5}
+\end{exercise}
